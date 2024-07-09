@@ -13,7 +13,7 @@ class SimpleMacd(BaseStrategy):
         self.macd = me1 - me2
         self.signal = EMA(self.macd, period=9)
 
-        bt.indicators.MACDHisto(self.data)
+        # bt.indicators.MACDHisto(self.data)
 
     def next(self):
         if self.order:
