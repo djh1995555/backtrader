@@ -18,25 +18,3 @@ class BaseStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-
-        self.mystats = csv.writer(open("mystats.csv", "w"))
-        self.mystats.writerow(['datetime',
-                               'drawdown', 
-                               'maxdrawdown',
-                               'timereturn',
-                               'value', 
-                               'cash',
-                               ])
-
-    def write(self, date):
-        self.mystats.writerow([date.strftime('%Y-%m-%d'),
-                               '%.4f' % self.stats.drawdown.drawdown[0],
-                               '%.4f' % self.stats.drawdown.maxdrawdown[0],
-                               '%.4f' % self.stats.timereturn.line[0],
-                               '%.4f' % self.stats.broker.value[0],
-                               '%.4f' % self.stats.broker.cash[0]])
-    def write_next(self):
-        self.write(self.data.datetime.date(-1))
-
-    def write_stop(self):
-        self.write(self.data.datetime.date(0))

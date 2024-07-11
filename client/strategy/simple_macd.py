@@ -10,18 +10,19 @@ class SimpleMacd(BaseStrategy):
         super().__init__()
         me1 = EMA(self.data, period=12)
         me2 = EMA(self.data, period=26)
-        self.macd = me1 - me2
-        self.signal = EMA(self.macd, period=9)
+        self.diff = me1 - me2
+        self.dea = EMA(self.diff, period=9)
 
-        # bt.indicators.MACDHisto(self.data)
+        bt.indicators.MACDHisto(self.data)
 
     def next(self):
+        # print(f"next data len:{len(self.data)} len:{len(self.diff)}")
         if self.order:
             return
 
         if not self.position:
-            condition1 = self.macd[-1] - self.signal[-1]
-            condition2 = self.macd[0] - self.signal[0]
+            condition1 = self.diff[-1] - self.dea[-1]
+            condition2 = self.diff[0] - self.dea[0]
             if condition1 < 0 and condition2 > 0:
                 self.log('BUY CREATE, %.2f' % self.dataclose[0])
                 self.order = self.buy()
@@ -31,4 +32,3 @@ class SimpleMacd(BaseStrategy):
             if condition > 0.1 or condition < -0.1:
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
                 self.order = self.sell()
-        self.write_next()

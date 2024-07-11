@@ -88,6 +88,7 @@ class PInfo(object):
         self.labels = collections.defaultdict(list)
         self.legpos = collections.defaultdict(int)
         self.titles = []
+        self.volume_fig_idx = 0
 
         # self.prop = mfontmgr.FontProperties(size=self.sch.subtxtsize)
 
@@ -166,12 +167,15 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
             pranges.append([a, b, d])
 
         figs = []
+        row_heights = [300] * self.pinf.nrows
+        row_heights[self.volume_fig_idx] = 800
         for numfig in range(numfigs):
             self.fig = make_subplots(rows=self.pinf.nrows,
                                      cols=1,
                                      shared_xaxes=True,
                                      vertical_spacing=0.05,
                                      subplot_titles=self.pinf.titles,
+                                     row_heights=row_heights,
                                      specs=[[{'secondary_y': True}] for _ in range(self.pinf.nrows)],
                                      )
             figs.append(self.fig)
@@ -226,11 +230,12 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
                     self.plotind(data, ind, subinds=self.dplotsover[ind], upinds=self.dplotsup[ind], downinds=self.dplotsdown[ind])
 
             # Figure style
-            self.fig.update_layout(title="Quant Backtest Result", 
-                                   title_font=dict(size=30, family="Arial", weight="bold"),
-                                   title_x=0.45, 
-                                   height=1280, 
-                                   hovermode='x unified')
+            self.fig.update_layout(
+                # title="Quant Backtest Result", 
+                # title_font=dict(size=30, family="Arial", weight="bold"),
+                # title_x=0.45, 
+                height=2000, 
+                hovermode='x unified')
             for i in range(self.pinf.nrows):
                 self.fig.update_xaxes(showticklabels=True, row=i, col=1)
 
@@ -261,7 +266,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
         return ax
 
     def plotind(self, iref, ind, subinds=None, upinds=None, downinds=None, masterax=None, secondary_y=False):
-        print(f'plotind plot name:{ind.__class__.__name__}')
+        # print(f'plotind plot name:{ind.__class__.__name__}')
         sch = self.p.scheme
 
         # check subind
@@ -403,11 +408,11 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
 
     def pltmethod(self, ax, xdata, lplotarray, secondary_y, **plotkwargs):
         # print(ax, plotkwargs)
-        print("pltmethod")
+        # print("pltmethod")
         opacity = 1
         color = self.convert_color_syntax(plotkwargs['color'])
         line = dict(color=color, width=2)
-        print(f"    data label:{self.wrap_legend_text(plotkwargs['label'])}")
+        # print(f"    data label:{self.wrap_legend_text(plotkwargs['label'])}")
         if 'marker' in plotkwargs:
             # Scatter plot
             marker = dict(symbol=MARKER_STYLE_MAPPER.get(plotkwargs['marker'], 0), line=line)
@@ -445,7 +450,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
                                )
 
     def plotvolume(self, data, opens, highs, lows, closes, volumes, label):
-        print("plotvolume")
+        # print("plotvolume")
         pmaster = data.plotinfo.plotmaster
         if pmaster is data:
             pmaster = None
@@ -476,7 +481,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
             # Get x axis data
             xdata = self.pinf.xreal
             xdata = [bt.num2date(x) for x in xdata]
-            print(f"    data label:{self.wrap_legend_text(label)}")
+            # print(f"    data label:{self.wrap_legend_text(label)}")
             self.fig.add_trace(go.Bar(x=np.array(xdata),
                                       y=np.array(volumes),
                                       name=self.wrap_legend_text(label),
@@ -485,12 +490,12 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
             self.fig['layout'][f'yaxis{2 * ax - 1}']['range'] = [0, maxvol / self.pinf.sch.volscaling]
 
     def plotdata(self, data, indicators):
-        print("plotdata")
+        # print("plotdata")
         for ind in indicators:
-            print(f"    ind:{ind.__class__.__name__}")
+            # print(f"    ind:{ind.__class__.__name__}")
             upinds = self.dplotsup[ind]
             for upind in upinds:
-                print(f"    upind:{upind.__class__.__name__}")
+                # print(f"    upind:{upind.__class__.__name__}")
                 self.plotind(data, upind,
                              subinds=self.dplotsover[upind],
                              upinds=self.dplotsup[upind],
@@ -544,7 +549,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
         # Get x axis data
         xdata = self.pinf.xreal
         xdata = [bt.num2date(x) for x in xdata]
-        print(f"    data label:{self.wrap_legend_text(datalabel)}")
+        # print(f"    data label:{self.wrap_legend_text(datalabel)}")
         if self.pinf.sch.style.startswith('line'):
             if self.pinf.sch.linevalues and plinevalues:
                 datalabel += f' C:{closes[-1]:.{self.pinf.sch.decimal_places}f}'
@@ -587,7 +592,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
                 self.fig['layout'][f'yaxis{2 * ax}']['tickformat'] = f'.{self.pinf.sch.decimal_places}f'
 
         for ind in indicators:
-            print(f"    ind:{ind.__class__.__name__}")
+            # print(f"    ind:{ind.__class__.__name__}")
             self.plotind(data, ind, subinds=self.dplotsover[ind], masterax=ax, secondary_y=True)
 
         a = axdatamaster or ax
@@ -595,7 +600,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
         for ind in indicators:
             downinds = self.dplotsdown[ind]
             for downind in downinds:
-                print(f"    downind:{downind.__class__.__name__}")
+                # print(f"    downind:{downind.__class__.__name__}")
                 self.plotind(data, downind,
                              subinds=self.dplotsover[downind],
                              upinds=self.dplotsup[downind],
@@ -622,11 +627,11 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
                 continue
 
             if x.plotinfo.subplot:
-                print(f'dplotstop name:{x.__class__.__name__}')
+                # print(f'dplotstop name:{x.__class__.__name__}')
                 self.dplotstop.append(x)
             else:
                 key = getattr(x._clock, 'owner', x._clock)
-                print(f'dplotsover name:{x.__class__.__name__}')
+                # print(f'dplotsover name:{x.__class__.__name__}')
                 self.dplotsover[key].append(x)
 
         # Sort indicators in the different lists/dictionaries
@@ -663,13 +668,13 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
             
             if x.plotinfo.subplot and xpmaster is None:
                 if x.plotinfo.plotabove:
-                    print(f'dplotsup name:{x.__class__.__name__}')
+                    # print(f'dplotsup name:{x.__class__.__name__}')
                     self.dplotsup[key].append(x)
                 else:
-                    print(f'dplotsdown name:{x.__class__.__name__}')
+                    # print(f'dplotsdown name:{x.__class__.__name__}')
                     self.dplotsdown[key].append(x)
             else:
-                print(f'dplotsover name:{x.__class__.__name__}')
+                # print(f'dplotsover name:{x.__class__.__name__}')
                 self.dplotsover[key].append(x)
 
     def calcrows(self, strategy):
@@ -689,7 +694,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
             for x in v:
                 self.pinf.titles.append(x.__class__.__name__)
 
-        print(f"rowsmajor:{rowsmajor}")
+        # print(f"rowsmajor:{rowsmajor}")
         datasnoplot = 0
         for data in strategy.datas:
             if not data.plotinfo.plot:
@@ -709,6 +714,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
                         nrows += 0  # volume never adds row in Plotly subplot
                 else:
                     # data adds rows, volume may
+                    self.volume_fig_idx = nrows
                     nrows += rowsmajor
                     self.pinf.titles.append("Volume")
                     if self.pinf.sch.volume and not self.pinf.sch.voloverlay:
@@ -752,7 +758,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
         return color
 
     def fill_between(self, ax, x, y1, y2, secondary_y=False, **kwargs):
-        print("fill_between")
+        # print("fill_between")
         color = COLOR_MAPPER[kwargs.get('color', 'black')]
         opacity = kwargs.get('opacity', 1)
         color = self.rgb_to_rgba(color, opacity)
@@ -766,7 +772,7 @@ class PlotlyPlotter(metaclass=bt.MetaParams):
 
         name = f'{kwargs.get("attr", "")}_{kwargs.get("label", "")}'
         legendgroup = f'{name}_{ax}'
-        print(f"    name:{self.wrap_legend_text(name)}")
+        # print(f"    name:{self.wrap_legend_text(name)}")
         self.fig.add_trace(go.Scatter(x=x,
                                       y=y2,
                                       name=self.wrap_legend_text(name),
