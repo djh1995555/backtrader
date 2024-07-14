@@ -1,6 +1,8 @@
 from datetime import datetime
 import akshare as ak  # 升级到最新版
 import pandas as pd
+import matplotlib.pyplot as plt
+from factor_analyzer.factor_plotter import FactorPlotter
 
 def get_stock_data():
     period="daily"
@@ -37,5 +39,22 @@ def get_stock_minute_data():
     stock_zh_a_hist_min_em_df.to_csv('result2.csv')
 
 def get_financial_data():
-    stock_yjkb_em_df = ak.stock_yjkb_em(date="20200331")
-    stock_yjkb_em_df.to_csv('financial_data.csv')
+    stock_financial_analysis_indicator_df = ak.stock_financial_analysis_indicator(symbol="600004", start_year="2020")
+    stock_financial_analysis_indicator_df.to_csv('financial_data.csv')
+
+# stock_financial_analysis_indicator_df = ak.stock_financial_analysis_indicator(symbol="600004", start_year="2014")
+# print(ak.stock_financial_analysis_indicator.__name__)
+# stock_financial_analysis_indicator_df.to_csv(f'{ak.stock_financial_analysis_indicator.__name__}.csv')
+# factor_plotter = FactorPlotter()
+# # factor_plotter.plot(stock_financial_analysis_indicator_df, 20, "stock_financial_analysis_indicator")
+# factor_plotter.plot_subfile(stock_financial_analysis_indicator_df,1, 21, ak.stock_financial_analysis_indicator.__name__,0)
+
+def get_data(data_interface, **kwargs):
+    df = data_interface(kwargs)
+    factor_plotter = FactorPlotter()
+    factor_plotter.plot(df, 20, data_interface.__name__)
+
+# get_data(ak.stock_zh_a_hist,symbol="000003", start_date="20200101", end_date="20240101")
+
+df = ak.stock_zh_a_hist(symbol="000003", start_date="20200101", end_date="20240101")
+df.to_csv("result.csv")
